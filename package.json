@@ -1,11 +1,12 @@
 {
-	"name": "three-projected-material",
-	"description": "Material that projects a texture onto an object",
-	"version": "2.0.5",
+	"name": "@lume/three-projected-material",
+	"description": "A Three.js material that projects a texture onto an object",
+	"version": "0.0.0",
 	"type": "module",
 	"main": "dist/ProjectedMaterial.js",
 	"module": "dist/ProjectedMaterial.js",
-	"repository": "git@github.com:marcofugaro/three-projected-material.git",
+	"homepage": "https://github.com/lume/three-projected-material",
+	"repository": "git@github.com:lume/three-projected-material.git",
 	"contributors": [
 		{
 			"name": "Marco Fugaro",
