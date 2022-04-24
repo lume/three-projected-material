@@ -23,7 +23,12 @@
 		"start": "serve examples/",
 		"build": "tsc && rollup -c",
 		"deploy": "gh-pages -d examples",
-		"postbuild": "cp dist/*.js dist/*.d.ts examples/lib/"
+		"postbuild": "cp dist/*.js dist/*.d.ts examples/lib/",
+		"release:patch": "npm version patch -m 'v%s'",
+		"release:minor": "npm version minor -m 'v%s'",
+		"release:major": "npm version major -m 'v%s'",
+		"preversion": "npm run build && git add .",
+		"postversion": "git push --follow-tags"
 	},
 	"peerDependencies": {
 		"three": ">=0.124.0"
