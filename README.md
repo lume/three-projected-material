@@ -21,7 +21,7 @@ npm install three three-projected-material
 then import `ProjectedMaterial` and you'll be on your way:
 
 ```js
-import {ProjectedMaterial} from 'three-projected-material'
+import {ProjectedMaterial} from 'three-projected-material/dist/ProjectedMaterial.js'
 
 const mat = new ProjectedMaterial(/*...*/)
 // ...
@@ -38,7 +38,7 @@ https://unpkg.com, like so:
 
 ```html
 <script type="module">
-	import {ProjectedMaterial} from 'https://unpkg.com/three-projected-material@^3.0.0'
+	import {ProjectedMaterial} from 'https://unpkg.com/three-projected-material@^3.0.0/dist/ProjectedMaterial.js'
 
 	const mat = new ProjectedMaterial(/*...*/)
 	// ...

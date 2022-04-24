@@ -3,8 +3,6 @@
 	"description": "A Three.js material that projects a texture onto an object",
 	"version": "0.0.0",
 	"type": "module",
-	"main": "dist/ProjectedMaterial.js",
-	"module": "dist/ProjectedMaterial.js",
 	"homepage": "https://github.com/lume/three-projected-material",
 	"repository": "git@github.com:lume/three-projected-material.git",
 	"contributors": [
