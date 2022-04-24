@@ -1,4 +1,4 @@
-# three-projected-material
+# @lume/three-projected-material
 
 > Three.js Material which lets you do [Texture Projection](https://en.wikipedia.org/wiki/Projective_texture_mapping) on a 3d Model.
 
@@ -12,17 +12,17 @@ This method supports `TypeScript`.
 
 If you're familiar with [Node.js](https://nodejs.org/) and managing dependencies
 with `npm`, and have a build setup in place or know how to serve ES modules to a
-browser, then install `three` and `three-projected-material` from NPM,
+browser, then install `three` and `@lume/three-projected-material` from NPM,
 
 ```
-npm install three three-projected-material
+npm install three @lume/three-projected-material
 ```
 
 then import `ProjectedMaterial` and you'll be on your way. If you're writing ES
 modules, import like this:
 
 ```js
-import {ProjectedMaterial} from 'three-projected-material/dist/ProjectedMaterial.js'
+import {ProjectedMaterial} from '@lume/three-projected-material/dist/ProjectedMaterial.js'
 
 const mat = new ProjectedMaterial(/*...*/)
 // ...
@@ -33,7 +33,7 @@ can use dynamic `import()` as long as your version of Node or your build tools
 are new enough to support it:
 
 ```js
-import('three-projected-material/dist/ProjectedMaterial.js').then(({ProjectedMaterial}) => {
+import('@lume/three-projected-material/dist/ProjectedMaterial.js').then(({ProjectedMaterial}) => {
 	const mat = new ProjectedMaterial(/*...*/)
 	// ...
 })
@@ -44,13 +44,13 @@ import('three-projected-material/dist/ProjectedMaterial.js').then(({ProjectedMat
 These methods do not support `TypeScript`, only plain `JavaScript`.
 
 If you don't have a build setup or you are only familiar with plain HTML files,
-import `three-projected-material` from a
+import `@lume/three-projected-material` from a
 [CDN](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/) such as
 https://unpkg.com, like so:
 
 ```html
 <script type="module">
-	import {ProjectedMaterial} from 'https://unpkg.com/three-projected-material@^3.0.0/dist/ProjectedMaterial.js'
+	import {ProjectedMaterial} from 'https://unpkg.com/@lume/three-projected-material@^3.0.0/dist/ProjectedMaterial.js'
 
 	const mat = new ProjectedMaterial(/*...*/)
 	// ...
@@ -64,7 +64,7 @@ script after the three.js script:
 
 ```html
 <script src="..../three.js"></script>
-<script src="https://unpkg.com/three-projected-material@^3.0.0/dist/ProjectedMaterial.global.js"></script>
+<script src="https://unpkg.com/@lume/three-projected-material@^3.0.0/dist/ProjectedMaterial.global.js"></script>
 <script>
 	const {ProjectedMaterial} = window.projectedMaterial
 
