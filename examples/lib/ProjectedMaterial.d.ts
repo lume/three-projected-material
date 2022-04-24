@@ -14,6 +14,7 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
 }
 export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     #private;
+    static version: string;
     get camera(): PerspectiveCamera | OrthographicCamera;
     set camera(camera: PerspectiveCamera | OrthographicCamera);
     get texture(): Texture;
