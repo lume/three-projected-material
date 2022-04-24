@@ -18,13 +18,25 @@ browser, then install `three` and `three-projected-material` from NPM,
 npm install three three-projected-material
 ```
 
-then import `ProjectedMaterial` and you'll be on your way:
+then import `ProjectedMaterial` and you'll be on your way. If you're writing ES
+modules, import like this:
 
 ```js
 import {ProjectedMaterial} from 'three-projected-material/dist/ProjectedMaterial.js'
 
 const mat = new ProjectedMaterial(/*...*/)
 // ...
+```
+
+If you're writing old-school CommonJS modules (consider migrating already!) you
+can use dynamic `import()` as long as your version of Node or your build tools
+are new enough to support it:
+
+```js
+import('three-projected-material/dist/ProjectedMaterial.js').then(({ProjectedMaterial}) => {
+	const mat = new ProjectedMaterial(/*...*/)
+	// ...
+})
 ```
 
 ## Alternative Installation
