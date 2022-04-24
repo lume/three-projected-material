@@ -23,8 +23,9 @@
 	],
 	"scripts": {
 		"start": "serve examples/",
-		"build": "tsc && tsc --outDir examples/lib && rollup -c",
-		"deploy": "gh-pages -d examples"
+		"build": "tsc && rollup -c",
+		"deploy": "gh-pages -d examples",
+		"postbuild": "cp dist/*.js dist/*.d.ts examples/lib/"
 	},
 	"peerDependencies": {
 		"three": ">=0.124.0"

@@ -64,13 +64,13 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     };
     readonly isProjectedMaterial = true;
     constructor({ camera, texture, textureScale, textureOffset, cover, ...options }?: ProjectedMaterialParameters);
-    saveDimensions(): void;
     saveCameraMatrices(): void;
     project(mesh: Mesh): void;
     projectInstanceAt(index: number, instancedMesh: InstancedMesh, matrixWorld: Matrix4, { forceCameraSave }?: {
         forceCameraSave?: boolean | undefined;
     }): void;
     copy(source: this): this;
+    dispose(): void;
 }
 export declare function allocateProjectionData(geometry: BufferGeometry, instancesCount: number): void;
 export declare function isOrthographicCamera(cam: Camera): cam is OrthographicCamera;

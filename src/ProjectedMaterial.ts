@@ -41,7 +41,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 		this.#camera = camera
 
-		this.saveDimensions()
+		this.#saveDimensions()
 	}
 
 	get texture() {
@@ -59,10 +59,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			addLoadListener(texture, () => {
 				this.uniforms.isTextureLoaded.value = true
 
-				this.saveDimensions()
+				this.#saveDimensions()
 			})
 		} else {
-			this.saveDimensions()
+			this.#saveDimensions()
 		}
 	}
 
@@ -71,7 +71,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	}
 	set textureScale(textureScale) {
 		this.#textureScale = textureScale
-		this.saveDimensions()
+		this.#saveDimensions()
 	}
 
 	get textureOffset() {
@@ -86,7 +86,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	}
 	set cover(cover) {
 		this.#cover = cover
-		this.saveDimensions()
+		this.#saveDimensions()
 	}
 
 	uniforms
@@ -261,11 +261,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		// is the same used to render.
 		// We do this on window resize because there is no way to
 		// listen for the resize of the renderer
-		window.addEventListener('resize', () => {
-			this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix)
-
-			this.saveDimensions()
-		})
+		window.addEventListener('resize', this.#saveCameraProjectionMatrix)
 
 		// If the image texture passed hasn't loaded yet,
 		// wait for it to load and compute the correct proportions.
@@ -273,11 +269,18 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		addLoadListener(texture, () => {
 			this.uniforms.isTextureLoaded.value = true
 
-			this.saveDimensions()
+			this.#saveDimensions()
 		})
 	}
 
-	saveDimensions() {
+	#saveCameraProjectionMatrix = () => {
+		debugger
+		this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix)
+
+		this.#saveDimensions()
+	}
+
+	#saveDimensions() {
 		const [widthScaled, heightScaled] = computeScaledDimensions(
 			this.texture,
 			this.camera,
@@ -442,6 +445,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.cover = source.cover
 
 		return this
+	}
+
+	override dispose() {
+		super.dispose()
+		window.removeEventListener('resize', this.#saveCameraProjectionMatrix)
 	}
 }
 

@@ -19,7 +19,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
             throw new Error('Invalid camera set to the ProjectedMaterial');
         }
         this.#camera = camera;
-        this.saveDimensions();
+        this.#saveDimensions();
     }
     get texture() {
         return this.uniforms.projectedTexture.value;
@@ -33,11 +33,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
         if (!this.uniforms.isTextureLoaded) {
             addLoadListener(texture, () => {
                 this.uniforms.isTextureLoaded.value = true;
-                this.saveDimensions();
+                this.#saveDimensions();
             });
         }
         else {
-            this.saveDimensions();
+            this.#saveDimensions();
         }
     }
     get textureScale() {
@@ -45,7 +45,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
     }
     set textureScale(textureScale) {
         this.#textureScale = textureScale;
-        this.saveDimensions();
+        this.#saveDimensions();
     }
     get textureOffset() {
         return this.uniforms.textureOffset.value;
@@ -58,7 +58,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
     }
     set cover(cover) {
         this.#cover = cover;
-        this.saveDimensions();
+        this.#saveDimensions();
     }
     uniforms;
     isProjectedMaterial = true;
@@ -208,19 +208,21 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
         // is the same used to render.
         // We do this on window resize because there is no way to
         // listen for the resize of the renderer
-        window.addEventListener('resize', () => {
-            this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix);
-            this.saveDimensions();
-        });
+        window.addEventListener('resize', this.#saveCameraProjectionMatrix);
         // If the image texture passed hasn't loaded yet,
         // wait for it to load and compute the correct proportions.
         // This avoids rendering black while the texture is loading
         addLoadListener(texture, () => {
             this.uniforms.isTextureLoaded.value = true;
-            this.saveDimensions();
+            this.#saveDimensions();
         });
     }
-    saveDimensions() {
+    #saveCameraProjectionMatrix = () => {
+        debugger;
+        this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix);
+        this.#saveDimensions();
+    };
+    #saveDimensions() {
         const [widthScaled, heightScaled] = computeScaledDimensions(this.texture, this.camera, this.textureScale, this.cover);
         this.uniforms.widthScaled.value = widthScaled;
         this.uniforms.heightScaled.value = heightScaled;
@@ -314,6 +316,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
         this.textureOffset = source.textureOffset;
         this.cover = source.cover;
         return this;
+    }
+    dispose() {
+        super.dispose();
+        window.removeEventListener('resize', this.#saveCameraProjectionMatrix);
     }
 }
 // get camera ratio from different types of cameras
