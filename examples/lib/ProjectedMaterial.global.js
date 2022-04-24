@@ -37,7 +37,7 @@
       }, 16);
   }
 
-  const version = '0.1.0';
+  const version = '0.1.1';
 
   class ProjectedMaterial extends MeshPhysicalMaterial_js.MeshPhysicalMaterial {
       static version = version;
