@@ -24,7 +24,6 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     set textureOffset(textureOffset: Vector2);
     get cover(): boolean;
     set cover(cover: boolean);
-    projectedTexelToLinear: string;
     uniforms: {
         projectedTexture: {
             value: Texture;

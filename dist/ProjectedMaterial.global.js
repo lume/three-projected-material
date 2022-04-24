@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three/src/materials/MeshPhysicalMaterial.js'), require('three/src/cameras/PerspectiveCamera.js'), require('three/src/textures/Texture.js'), require('three/src/math/Vector2.js'), require('three/src/core/InstancedBufferAttribute.js'), require('three/src/math/Matrix4.js'), require('three/src/math/Vector3.js'), require('three/src/constants.js')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'three/src/materials/MeshPhysicalMaterial.js', 'three/src/cameras/PerspectiveCamera.js', 'three/src/textures/Texture.js', 'three/src/math/Vector2.js', 'three/src/core/InstancedBufferAttribute.js', 'three/src/math/Matrix4.js', 'three/src/math/Vector3.js', 'three/src/constants.js'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.projectedMaterial = {}, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE));
-})(this, (function (exports, MeshPhysicalMaterial_js, PerspectiveCamera_js, Texture_js, Vector2_js, InstancedBufferAttribute_js, Matrix4_js, Vector3_js, constants_js) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three/src/materials/MeshPhysicalMaterial.js'), require('three/src/cameras/PerspectiveCamera.js'), require('three/src/textures/Texture.js'), require('three/src/math/Vector2.js'), require('three/src/core/InstancedBufferAttribute.js'), require('three/src/math/Matrix4.js'), require('three/src/math/Vector3.js')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'three/src/materials/MeshPhysicalMaterial.js', 'three/src/cameras/PerspectiveCamera.js', 'three/src/textures/Texture.js', 'three/src/math/Vector2.js', 'three/src/core/InstancedBufferAttribute.js', 'three/src/math/Matrix4.js', 'three/src/math/Vector3.js'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.projectedMaterial = {}, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE, global.THREE));
+})(this, (function (exports, MeshPhysicalMaterial_js, PerspectiveCamera_js, Texture_js, Vector2_js, InstancedBufferAttribute_js, Matrix4_js, Vector3_js) { 'use strict';
 
   function monkeyPatch(shader, { defines = {}, header = '', main = '', ...replaces }) {
       let patchedShader = shader;
@@ -36,27 +36,6 @@
           }
       }, 16);
   }
-  // https://github.com/mrdoob/three.js/blob/r139/src/renderers/webgl/WebGLProgram.js#L26
-  function getEncodingComponents(encoding) {
-      switch (encoding) {
-          case constants_js.LinearEncoding:
-              return ['Linear', '( value )'];
-          case constants_js.sRGBEncoding:
-              return ['sRGB', '( value )'];
-          default:
-              console.warn('THREE.WebGLProgram: Unsupported encoding:', encoding);
-              return ['Linear', '( value )'];
-      }
-  }
-  // https://github.com/mrdoob/three.js/blob/3c60484ce033e0dc2d434ce0eb89fc1f59d57d65/src/renderers/webgl/WebGLProgram.js#L66-L71
-  function getTexelDecodingFunction(functionName, encoding) {
-      const components = getEncodingComponents(encoding);
-      return `
-    vec4 ${functionName}(vec4 value) {
-      return ${components[0]}ToLinear${components[1]};
-    }
-  `;
-  }
 
   class ProjectedMaterial extends MeshPhysicalMaterial_js.MeshPhysicalMaterial {
       // internal values... they are exposed via getters
@@ -82,10 +61,6 @@
           }
           this.uniforms.projectedTexture.value = texture;
           this.uniforms.isTextureLoaded.value = Boolean(texture.image);
-          // TODO ENCODINGS getTexelDecodingFunction and related shader code was removed
-          // (https://github.com/mrdoob/three.js/commit/05fc79cd52b79e8c3e8dec1e7dca72c5c39983a4).
-          // How to update?
-          this.projectedTexelToLinear = getTexelDecodingFunction('projectedTexelToLinear', texture.encoding);
           if (!this.uniforms.isTextureLoaded) {
               addLoadListener(texture, () => {
                   this.uniforms.isTextureLoaded.value = true;
@@ -116,7 +91,6 @@
           this.#cover = cover;
           this.saveDimensions();
       }
-      projectedTexelToLinear;
       uniforms;
       isProjectedMaterial = true;
       constructor({ camera, texture = new Texture_js.Texture(), textureScale, textureOffset = new Vector2_js.Vector2(), cover, ...options } = {}) {
@@ -134,8 +108,6 @@
           this.#textureScale = textureScale ?? this.#textureScale;
           // scale to keep the image proportions and apply textureScale
           const [widthScaled, heightScaled] = computeScaledDimensions(texture, this.#camera, this.#textureScale, this.#cover);
-          // apply encoding based on provided texture
-          this.projectedTexelToLinear = getTexelDecodingFunction('projectedTexelToLinear', texture.encoding);
           this.uniforms = {
               projectedTexture: { value: texture },
               // this avoids rendering black if the texture
@@ -220,8 +192,6 @@
 					varying vec4 vWorldPosition;
 					#endif
 
-					${(this.projectedTexelToLinear, '') /*TODO ENCODINGS?*/}
-
 					float mapRange(float value, float min1, float max1, float min2, float max2) {
 						return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 					}
@@ -255,11 +225,6 @@
 
 					if (isFacingProjector && isInTexture && isTextureLoaded && isTextureProjected) {
 						vec4 textureColor = texture2D(projectedTexture, uv);
-
-						// apply the enccoding from the texture
-						// textureColor = projectedTexelToLinear(textureColor);
-						// TODO ENCODINGS is this correct now that encodings have been removed.
-						textureColor = textureColor;
 
 						// apply the material opacity
 						textureColor.a *= opacity;

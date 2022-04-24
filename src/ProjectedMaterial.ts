@@ -5,7 +5,7 @@ import {Vector2} from 'three/src/math/Vector2.js'
 import {InstancedBufferAttribute} from 'three/src/core/InstancedBufferAttribute.js'
 import {Matrix4} from 'three/src/math/Matrix4.js'
 import {Vector3} from 'three/src/math/Vector3.js'
-import {monkeyPatch, addLoadListener, getTexelDecodingFunction} from './three-utils.js'
+import {monkeyPatch, addLoadListener} from './three-utils.js'
 
 import type {
 	BufferGeometry,
@@ -55,14 +55,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.uniforms.projectedTexture.value = texture
 		this.uniforms.isTextureLoaded.value = Boolean(texture.image)
 
-		// TODO ENCODINGS getTexelDecodingFunction and related shader code was removed
-		// (https://github.com/mrdoob/three.js/commit/05fc79cd52b79e8c3e8dec1e7dca72c5c39983a4).
-		// How to update?
-		this.projectedTexelToLinear = getTexelDecodingFunction(
-			'projectedTexelToLinear',
-			texture.encoding,
-		)
-
 		if (!this.uniforms.isTextureLoaded) {
 			addLoadListener(texture, () => {
 				this.uniforms.isTextureLoaded.value = true
@@ -97,7 +89,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.saveDimensions()
 	}
 
-	projectedTexelToLinear
 	uniforms
 	readonly isProjectedMaterial = true
 
@@ -132,12 +123,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			this.#camera,
 			this.#textureScale,
 			this.#cover,
-		)
-
-		// apply encoding based on provided texture
-		this.projectedTexelToLinear = getTexelDecodingFunction(
-			'projectedTexelToLinear',
-			texture.encoding,
 		)
 
 		this.uniforms = {
@@ -228,8 +213,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					varying vec4 vWorldPosition;
 					#endif
 
-					${(this.projectedTexelToLinear, '') /*TODO ENCODINGS?*/}
-
 					float mapRange(float value, float min1, float max1, float min2, float max2) {
 						return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 					}
@@ -263,11 +246,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 					if (isFacingProjector && isInTexture && isTextureLoaded && isTextureProjected) {
 						vec4 textureColor = texture2D(projectedTexture, uv);
-
-						// apply the enccoding from the texture
-						// textureColor = projectedTexelToLinear(textureColor);
-						// TODO ENCODINGS is this correct now that encodings have been removed.
-						textureColor = textureColor;
 
 						// apply the material opacity
 						textureColor.a *= opacity;
