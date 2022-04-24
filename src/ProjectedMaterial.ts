@@ -6,6 +6,7 @@ import {InstancedBufferAttribute} from 'three/src/core/InstancedBufferAttribute.
 import {Matrix4} from 'three/src/math/Matrix4.js'
 import {Vector3} from 'three/src/math/Vector3.js'
 import {monkeyPatch, addLoadListener} from './three-utils.js'
+import {version} from './version.js'
 
 import type {
 	BufferGeometry,
@@ -26,6 +27,8 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
 }
 
 export class ProjectedMaterial extends MeshPhysicalMaterial {
+	static version = version
+
 	// internal values... they are exposed via getters
 	#camera: PerspectiveCamera | OrthographicCamera = new PerspectiveCamera()
 	#cover = false
