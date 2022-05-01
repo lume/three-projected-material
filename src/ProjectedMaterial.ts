@@ -277,7 +277,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	}
 
 	#saveCameraProjectionMatrix = () => {
-		debugger
 		this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix)
 
 		this.#saveDimensions()
