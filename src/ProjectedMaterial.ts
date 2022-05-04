@@ -23,7 +23,7 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
 	texture?: Texture
 	textureScale?: number
 	textureOffset?: Vector2
-	cover?: boolean
+	fitment?: Fitment
 }
 
 export class ProjectedMaterial extends MeshPhysicalMaterial {
@@ -31,7 +31,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 	// internal values... they are exposed via getters
 	#camera: PerspectiveCamera | OrthographicCamera = new PerspectiveCamera()
-	#cover = false
+	#fitment: Fitment = 'contain'
 	#textureScale = 1
 
 	get camera() {
@@ -84,11 +84,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.uniforms.textureOffset.value = textureOffset
 	}
 
-	get cover() {
-		return this.#cover
+	get fitment() {
+		return this.#fitment
 	}
-	set cover(cover) {
-		this.#cover = cover
+	set fitment(value) {
+		this.#fitment = value
 		this.#saveDimensions()
 	}
 
@@ -100,7 +100,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		texture = new Texture(),
 		textureScale,
 		textureOffset = new Vector2(),
-		cover,
+		fitment,
 		...options
 	}: ProjectedMaterialParameters = {}) {
 		if (!texture.isTexture) {
@@ -115,12 +115,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 		Object.defineProperty(this, 'isProjectedMaterial', {value: this.isProjectedMaterial})
 
-		// save the private variables
 		this.#camera = camera ?? this.#camera
-		this.#cover = cover ?? this.#cover
+		this.#fitment = fitment ?? this.#fitment
 		this.#textureScale = textureScale ?? this.#textureScale
 
-		// scale to keep the image proportions and apply textureScale
 		const [widthScaled, heightScaled] = computeScaledDimensions(
 			texture,
 			this.#camera,
@@ -283,15 +281,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	}
 
 	#saveDimensions() {
-		const [widthScaled, heightScaled] = computeScaledDimensions(
-			this.texture,
-			this.camera,
-			this.textureScale,
-			this.cover,
-		)
+		// scale to keep the image proportions and apply textureScale
+		computeScaledDimensions(this.texture, this.camera, this.textureScale, this.fitment, size)
 
-		this.uniforms.widthScaled.value = widthScaled
-		this.uniforms.heightScaled.value = heightScaled
+		this.uniforms.widthScaled.value = size.x
+		this.uniforms.heightScaled.value = size.y
 	}
 
 	saveCameraMatrices() {
@@ -444,7 +438,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.texture = source.texture
 		this.textureScale = source.textureScale
 		this.textureOffset = source.textureOffset
-		this.cover = source.cover
+		this.fitment = source.fitment
 
 		return this
 	}
@@ -472,21 +466,28 @@ function getCameraRatio(camera: PerspectiveCamera | OrthographicCamera) {
 	}
 }
 
+const size: Vec2 = {x: 1, y: 1}
+
 // scale to keep the image proportions and apply textureScale
 function computeScaledDimensions(
 	texture: Texture,
 	camera: PerspectiveCamera | OrthographicCamera,
 	textureScale: number,
-	cover: boolean,
-) {
+	fitment: Fitment,
+	outputSize: Vec2,
+): void {
 	// return some default values if the image hasn't loaded yet
 	if (!texture.image) {
-		return [1, 1]
+		outputSize.x = 1
+		outputSize.y = 1
+		return
 	}
 
 	// return if it's a video and if the video hasn't loaded yet
 	if (texture.image.videoWidth === 0 && texture.image.videoHeight === 0) {
-		return [1, 1]
+		outputSize.x = 1
+		outputSize.y = 1
+		return
 	}
 
 	const sourceWidth =
@@ -494,23 +495,20 @@ function computeScaledDimensions(
 	const sourceHeight =
 		texture.image.naturalHeight || texture.image.videoHeight || texture.image.clientHeight
 
+	const cameraWidth = 1
+	const cameraHeight = cameraWidth * (1 / getCameraRatio(camera))
 	const ratio = sourceWidth / sourceHeight
 	const ratioCamera = getCameraRatio(camera)
-	const widthCamera = 1
-	const heightCamera = widthCamera * (1 / ratioCamera)
-	let widthScaled
-	let heightScaled
-	if (cover ? ratio > ratioCamera : ratio < ratioCamera) {
-		const width = heightCamera * ratio
-		widthScaled = 1 / ((width / widthCamera) * textureScale)
-		heightScaled = 1 / textureScale
-	} else {
-		const height = widthCamera * (1 / ratio)
-		heightScaled = 1 / ((height / heightCamera) * textureScale)
-		widthScaled = 1 / textureScale
-	}
 
-	return [widthScaled, heightScaled]
+	if (fitment === 'cover' ? ratio > ratioCamera : ratio < ratioCamera) {
+		const width = cameraHeight * ratio
+		outputSize.x = 1 / ((width / cameraWidth) * textureScale)
+		outputSize.y = 1 / textureScale
+	} else {
+		const height = cameraWidth * (1 / ratio)
+		outputSize.x = 1 / textureScale
+		outputSize.y = 1 / ((height / cameraHeight) * textureScale)
+	}
 }
 
 export function allocateProjectionData(geometry: BufferGeometry, instancesCount: number) {
@@ -543,4 +541,11 @@ export function isPerspectiveCamera(cam: Camera): cam is PerspectiveCamera {
 export function isProjectedMaterial(mat: Material | Material[]): mat is ProjectedMaterial {
 	const _mat = mat as ProjectedMaterial | ProjectedMaterial[]
 	return Array.isArray(_mat) ? _mat.every(m => m.isProjectedMaterial) : _mat.isProjectedMaterial
+}
+
+export type Fitment = 'contain' | 'cover'
+
+export interface Vec2 {
+	x: number
+	y: number
 }
