@@ -31,7 +31,10 @@
 		<script type="module">
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
 			import {Mesh} from 'three/src/objects/Mesh.js'
+			import {Object3D} from 'three/src/core/Object3D.js'
 			import {DirectionalLight} from 'three/src/lights/DirectionalLight.js'
+			import {OrthographicCamera} from 'three/src/cameras/OrthographicCamera.js'
+			import {CameraHelper} from 'three/src/helpers/CameraHelper.js'
 			import {AmbientLight} from 'three/src/lights/AmbientLight.js'
 			import WebGLApp from './lib/WebGLApp.js'
 			import {ProjectedMaterial} from './lib/ProjectedMaterial.js'
@@ -50,6 +53,11 @@
 				showFps: true,
 				// enable orbit-controls
 				orbitControls: true,
+
+				// UI to toggle camera helper
+				controls: {
+					showProjector: false,
+				},
 			})
 
 			// attach it to the window to inspect in the console
@@ -65,28 +73,46 @@
 				// load the example texture
 				const texture = new TextureLoader().load('./images/uv.jpg')
 
+				const projectionCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 3)
+				projectionCam.position.z = 1.5
+
+				const camHelper = new CameraHelper(projectionCam)
+
+				webgl.controls.$onChanges(controls => {
+					console.log('WTF')
+					if (controls.showProjector?.value) {
+						webgl.scene.add(camHelper)
+					} else {
+						webgl.scene.remove(camHelper)
+					}
+				})
+
 				// create the mesh with the projected material
 				const material = new ProjectedMaterial({
-					camera: webgl.camera,
+					camera: projectionCam,
 					texture,
 					color: '#ccc',
-					textureScale: 0.8,
+					textureScale: 1,
 				})
 				const mesh = new Mesh(geometry, material)
 				webgl.scene.add(mesh)
 
-				// move the mesh any way you want!
-				webgl.onUpdate(dt => {
-					mesh.rotation.y -= dt * 0.5
-				})
-
-				// and when you're ready project the texture!
-				material.project(mesh)
-
 				// add lights
+				const lightContainer = new Object3D()
+				webgl.scene.add(lightContainer)
 				const directionalLight = new DirectionalLight(0xffffff, 0.6)
-				directionalLight.position.set(0, 10, 10)
-				webgl.scene.add(directionalLight)
+				directionalLight.position.set(10, 10, 10)
+				lightContainer.add(directionalLight)
+
+				webgl.onUpdate(dt => {
+					// move the mesh any way you want!
+					mesh.rotation.y -= dt * 0.5
+
+					// and when you're ready project the texture!
+					material.project(mesh)
+
+					lightContainer.rotation.z -= 0.01
+				})
 
 				const ambientLight = new AmbientLight(0xffffff, 0.6)
 				webgl.scene.add(ambientLight)

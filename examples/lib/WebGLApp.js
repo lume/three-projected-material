@@ -299,10 +299,16 @@ export default class WebGLApp {
 			}
 		})
 
+		this.onResize?.({width, height, pixelRatio})
+
 		// draw a frame to ensure the new size has been registered visually
 		this.draw()
 		return this
 	}
+
+	// For outside code to define.
+	/** @type {((obj: {width: number, height: number, pixelRatio: number}) => void) | null} */
+	onResize = null
 
 	// convenience function to trigger a PNG download of the canvas
 	saveScreenshot = async ({

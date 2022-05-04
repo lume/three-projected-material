@@ -102,7 +102,25 @@
 			elements.rotation.y = Math.PI / 2
 			webgl.onUpdate(() => {
 				elements.rotation.y -= 0.003
+				const rot = elements.rotation.y
+				elements.rotation.y = 0
+				for (const element of elements.children) {
+					element.rotation.x += 0.003
+					element.rotation.y += 0.003
+
+					// re-project the texture onto the mesh
+					element.material.project(element)
+				}
+				elements.rotation.y = rot
 			})
+
+			webgl.onResize = () => {
+				for (const element of elements.children) {
+					// Call this any time camera parameters were updated. In
+					// this case, resizing the scene updates camera parameters.
+					element.material.updateFromCamera()
+				}
+			}
 
 			// add lights
 			const directionalLight = new DirectionalLight(0xffffff, 0.6)

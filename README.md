@@ -149,6 +149,20 @@ After calling this method, you can move the mesh or the camera freely.
 | ------ | ---------------------------------------------------- |
 | `mesh` | The mesh that has a `ProjectedMaterial` as material. |
 
+### `material.updateFromCamera()`
+
+Call this any time the camera passed into `ProjectedMaterial` has had its parameters updated.
+
+```js
+const camera = new PerspectiveCamera(...)
+const mat = new ProjectedMaterial({camera})
+
+// then later if you modify the camera:
+camera.fov = 40
+camera.updateProjectionMatrix()
+mat.updateFromCamera() // don't forget to update the material too
+```
+
 ### `allocateProjectionData(geometry, instancesCount)`
 
 Allocate the data that will be used when projecting on an [InstancedMesh](https://threejs.org/docs/#api/en/objects/InstancedMesh). Use this on the geometry that will be used in pair with a `ProjectedMaterial` when initializing `InstancedMesh`.
@@ -164,11 +178,11 @@ This needs to be called before `.projectInstanceAt()`.
 
 Do the projection for an [InstancedMesh](https://threejs.org/docs/#api/en/objects/InstancedMesh). Don't forget to call `updateMatrix()` like you do before calling `InstancedMesh.setMatrixAt()`.
 
-To do projection an an instanced mesh, the geometry needs to be prepared with `allocateProjectionData()` beforehand.
+To do projection on an instanced mesh, the geometry needs to be prepared with `allocateProjectionData()` beforehand.
 
 ```js
 dummy.updateMatrix()
-projectInstanceAt(i, instancedMesh, dummy.matrix)
+material.projectInstanceAt(i, instancedMesh, dummy.matrix)
 ```
 
 [Link to the full example about instancing](https://marcofugaro.github.io/three-projected-material/instancing).

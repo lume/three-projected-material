@@ -253,12 +253,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			})
 		}
 
-		// Listen on resize if the camera used for the projection
-		// is the same used to render.
-		// We do this on window resize because there is no way to
-		// listen for the resize of the renderer
-		window.addEventListener('resize', this.#saveCameraProjectionMatrix)
-
 		// If the image texture passed hasn't loaded yet,
 		// wait for it to load and compute the correct proportions.
 		// This avoids rendering black while the texture is loading
@@ -269,9 +263,9 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		})
 	}
 
-	#saveCameraProjectionMatrix = () => {
+	/** Call this any time the camera has been updated externally. */
+	updateFromCamera() {
 		this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix)
-
 		this.#saveDimensions()
 	}
 
@@ -437,11 +431,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 		return this
 	}
-
-	override dispose() {
-		super.dispose()
-		window.removeEventListener('resize', this.#saveCameraProjectionMatrix)
-	}
 }
 
 // get camera ratio from different types of cameras
@@ -491,9 +480,9 @@ function computeScaledDimensions(
 		texture.image.naturalHeight || texture.image.videoHeight || texture.image.clientHeight
 
 	const cameraWidth = 1
-	const cameraHeight = cameraWidth * (1 / getCameraRatio(camera))
-	const ratio = sourceWidth / sourceHeight
 	const ratioCamera = getCameraRatio(camera)
+	const cameraHeight = cameraWidth * (1 / ratioCamera)
+	const ratio = sourceWidth / sourceHeight
 
 	if (fitment === 'cover' ? ratio > ratioCamera : ratio < ratioCamera) {
 		const width = cameraHeight * ratio

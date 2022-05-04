@@ -1,4 +1,4 @@
-// Forked from three/examples/jsm/controls/OrbitControls.js to slim down the imports.
+// Forked from three@r139/examples/jsm/controls/OrbitControls.js to slim down the imports.
 import {EventDispatcher} from 'three/src/core/EventDispatcher.js'
 import {MOUSE} from 'three/src/constants.js'
 import {Quaternion} from 'three/src/math/Quaternion.js'
