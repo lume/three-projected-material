@@ -11,7 +11,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
     static version = version;
     // internal values... they are exposed via getters
     #camera = new PerspectiveCamera();
-    #cover = false;
+    #fitment = 'contain';
     #textureScale = 1;
     get camera() {
         return this.#camera;
@@ -55,16 +55,16 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
     set textureOffset(textureOffset) {
         this.uniforms.textureOffset.value = textureOffset;
     }
-    get cover() {
-        return this.#cover;
+    get fitment() {
+        return this.#fitment;
     }
-    set cover(cover) {
-        this.#cover = cover;
+    set fitment(value) {
+        this.#fitment = value;
         this.#saveDimensions();
     }
     uniforms;
     isProjectedMaterial = true;
-    constructor({ camera, texture = new Texture(), textureScale, textureOffset = new Vector2(), cover, ...options } = {}) {
+    constructor({ camera, texture = new Texture(), textureScale, textureOffset = new Vector2(), fitment, ...options } = {}) {
         if (!texture.isTexture) {
             throw new Error('Invalid texture passed to the ProjectedMaterial');
         }
@@ -73,12 +73,9 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
         }
         super(options);
         Object.defineProperty(this, 'isProjectedMaterial', { value: this.isProjectedMaterial });
-        // save the private variables
         this.#camera = camera ?? this.#camera;
-        this.#cover = cover ?? this.#cover;
+        this.#fitment = fitment ?? this.#fitment;
         this.#textureScale = textureScale ?? this.#textureScale;
-        // scale to keep the image proportions and apply textureScale
-        const [widthScaled, heightScaled] = computeScaledDimensions(texture, this.#camera, this.#textureScale, this.#cover);
         this.uniforms = {
             projectedTexture: { value: texture },
             // this avoids rendering black if the texture
@@ -96,10 +93,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
             projDirection: { value: new Vector3(0, 0, -1) },
             // we will set this later when we will have positioned the object
             savedModelMatrix: { value: new Matrix4() },
-            widthScaled: { value: widthScaled },
-            heightScaled: { value: heightScaled },
+            widthScaled: { value: 1 },
+            heightScaled: { value: 1 },
             textureOffset: { value: textureOffset },
         };
+        this.#saveDimensions();
         this.onBeforeCompile = shader => {
             // expose also the material's uniforms
             Object.assign(this.uniforms, shader.uniforms);
@@ -206,11 +204,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 				`,
             });
         };
-        // Listen on resize if the camera used for the projection
-        // is the same used to render.
-        // We do this on window resize because there is no way to
-        // listen for the resize of the renderer
-        window.addEventListener('resize', this.#saveCameraProjectionMatrix);
         // If the image texture passed hasn't loaded yet,
         // wait for it to load and compute the correct proportions.
         // This avoids rendering black while the texture is loading
@@ -219,15 +212,16 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
             this.#saveDimensions();
         });
     }
-    #saveCameraProjectionMatrix = () => {
-        debugger;
+    /** Call this any time the camera has been updated externally. */
+    updateFromCamera() {
         this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix);
         this.#saveDimensions();
-    };
+    }
     #saveDimensions() {
-        const [widthScaled, heightScaled] = computeScaledDimensions(this.texture, this.camera, this.textureScale, this.cover);
-        this.uniforms.widthScaled.value = widthScaled;
-        this.uniforms.heightScaled.value = heightScaled;
+        // scale to keep the image proportions and apply textureScale
+        computeScaledDimensions(this.texture, this.camera, this.textureScale, this.fitment, size);
+        this.uniforms.widthScaled.value = size.x;
+        this.uniforms.heightScaled.value = size.y;
     }
     saveCameraMatrices() {
         // make sure the camera matrices are updated
@@ -316,12 +310,8 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
         this.texture = source.texture;
         this.textureScale = source.textureScale;
         this.textureOffset = source.textureOffset;
-        this.cover = source.cover;
+        this.fitment = source.fitment;
         return this;
-    }
-    dispose() {
-        super.dispose();
-        window.removeEventListener('resize', this.#saveCameraProjectionMatrix);
     }
 }
 // get camera ratio from different types of cameras
@@ -340,35 +330,37 @@ function getCameraRatio(camera) {
         }
     }
 }
+const size = { x: 1, y: 1 };
 // scale to keep the image proportions and apply textureScale
-function computeScaledDimensions(texture, camera, textureScale, cover) {
+function computeScaledDimensions(texture, camera, textureScale, fitment, outputSize) {
     // return some default values if the image hasn't loaded yet
     if (!texture.image) {
-        return [1, 1];
+        outputSize.x = 1;
+        outputSize.y = 1;
+        return;
     }
     // return if it's a video and if the video hasn't loaded yet
     if (texture.image.videoWidth === 0 && texture.image.videoHeight === 0) {
-        return [1, 1];
+        outputSize.x = 1;
+        outputSize.y = 1;
+        return;
     }
     const sourceWidth = texture.image.naturalWidth || texture.image.videoWidth || texture.image.clientWidth;
     const sourceHeight = texture.image.naturalHeight || texture.image.videoHeight || texture.image.clientHeight;
-    const ratio = sourceWidth / sourceHeight;
+    const cameraWidth = 1;
     const ratioCamera = getCameraRatio(camera);
-    const widthCamera = 1;
-    const heightCamera = widthCamera * (1 / ratioCamera);
-    let widthScaled;
-    let heightScaled;
-    if (cover ? ratio > ratioCamera : ratio < ratioCamera) {
-        const width = heightCamera * ratio;
-        widthScaled = 1 / ((width / widthCamera) * textureScale);
-        heightScaled = 1 / textureScale;
+    const cameraHeight = cameraWidth * (1 / ratioCamera);
+    const ratio = sourceWidth / sourceHeight;
+    if (fitment === 'cover' ? ratio > ratioCamera : ratio < ratioCamera) {
+        const width = cameraHeight * ratio;
+        outputSize.x = 1 / ((width / cameraWidth) * textureScale);
+        outputSize.y = 1 / textureScale;
     }
     else {
-        const height = widthCamera * (1 / ratio);
-        heightScaled = 1 / ((height / heightCamera) * textureScale);
-        widthScaled = 1 / textureScale;
+        const height = cameraWidth * (1 / ratio);
+        outputSize.x = 1 / textureScale;
+        outputSize.y = 1 / ((height / cameraHeight) * textureScale);
     }
-    return [widthScaled, heightScaled];
 }
 export function allocateProjectionData(geometry, instancesCount) {
     geometry.setAttribute(`savedModelMatrix0`, new InstancedBufferAttribute(new Float32Array(instancesCount * 4), 4));

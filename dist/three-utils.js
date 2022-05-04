@@ -1,21 +1,21 @@
-export function monkeyPatch(shader, { defines = {}, header = '', main = '', ...replaces }) {
+export function monkeyPatch(shader, { defines = {}, header = '', main = '', ...replacements }) {
     let patchedShader = shader;
     const replaceAll = (str, find, rep) => str.split(find).join(rep);
-    Object.keys(replaces).forEach(key => {
-        patchedShader = replaceAll(patchedShader, key, replaces[key]);
+    Object.keys(replacements).forEach(key => {
+        patchedShader = replaceAll(patchedShader, key, replacements[key]);
     });
     patchedShader = patchedShader.replace('void main() {', `
-    ${header}
-    void main() {
-      ${main}
-    `);
+			${header}
+			void main() {
+				${main}
+		`);
     const stringDefines = Object.keys(defines)
         .map(d => `#define ${d} ${defines[d]}`)
         .join('\n');
     return `
-    ${stringDefines}
-    ${patchedShader}
-  `;
+		${stringDefines}
+		${patchedShader}
+	`;
 }
 // run the callback when the image will be loaded
 export function addLoadListener(texture, callback) {

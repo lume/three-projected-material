@@ -1,5 +1,5 @@
 import type { Texture } from 'three';
-export declare function monkeyPatch(shader: string, { defines, header, main, ...replaces }: {
+export declare function monkeyPatch(shader: string, { defines, header, main, ...replacements }: {
     [x: string]: any;
     defines?: Record<string, string> | undefined;
     header?: string | undefined;

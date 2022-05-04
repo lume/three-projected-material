@@ -10,7 +10,7 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
     texture?: Texture;
     textureScale?: number;
     textureOffset?: Vector2;
-    cover?: boolean;
+    fitment?: Fitment;
 }
 export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     #private;
@@ -23,8 +23,8 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     set textureScale(textureScale: number);
     get textureOffset(): Vector2;
     set textureOffset(textureOffset: Vector2);
-    get cover(): boolean;
-    set cover(cover: boolean);
+    get fitment(): Fitment;
+    set fitment(value: Fitment);
     uniforms: {
         projectedTexture: {
             value: Texture;
@@ -64,17 +64,23 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
         };
     };
     readonly isProjectedMaterial = true;
-    constructor({ camera, texture, textureScale, textureOffset, cover, ...options }?: ProjectedMaterialParameters);
+    constructor({ camera, texture, textureScale, textureOffset, fitment, ...options }?: ProjectedMaterialParameters);
+    /** Call this any time the camera has been updated externally. */
+    updateFromCamera(): void;
     saveCameraMatrices(): void;
     project(mesh: Mesh): void;
     projectInstanceAt(index: number, instancedMesh: InstancedMesh, matrixWorld: Matrix4, { forceCameraSave }?: {
         forceCameraSave?: boolean | undefined;
     }): void;
     copy(source: this): this;
-    dispose(): void;
 }
 export declare function allocateProjectionData(geometry: BufferGeometry, instancesCount: number): void;
 export declare function isOrthographicCamera(cam: Camera): cam is OrthographicCamera;
 export declare function isPerspectiveCamera(cam: Camera): cam is PerspectiveCamera;
 export declare function isProjectedMaterial(mat: Material | Material[]): mat is ProjectedMaterial;
+export declare type Fitment = 'contain' | 'cover';
+export interface Vec2 {
+    x: number;
+    y: number;
+}
 export {};
