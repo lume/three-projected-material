@@ -119,13 +119,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.#fitment = fitment ?? this.#fitment
 		this.#textureScale = textureScale ?? this.#textureScale
 
-		const [widthScaled, heightScaled] = computeScaledDimensions(
-			texture,
-			this.#camera,
-			this.#textureScale,
-			this.#cover,
-		)
-
 		this.uniforms = {
 			projectedTexture: {value: texture},
 			// this avoids rendering black if the texture
@@ -143,10 +136,12 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			projDirection: {value: new Vector3(0, 0, -1)},
 			// we will set this later when we will have positioned the object
 			savedModelMatrix: {value: new Matrix4()},
-			widthScaled: {value: widthScaled},
-			heightScaled: {value: heightScaled},
+			widthScaled: {value: 1},
+			heightScaled: {value: 1},
 			textureOffset: {value: textureOffset},
 		}
+
+		this.#saveDimensions()
 
 		this.onBeforeCompile = shader => {
 			// expose also the material's uniforms
