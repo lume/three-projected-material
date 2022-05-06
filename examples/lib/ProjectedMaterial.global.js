@@ -37,7 +37,7 @@
         }, 16);
     }
 
-    const version = '0.2.0';
+    const version = '0.2.1';
 
     class ProjectedMaterial extends MeshPhysicalMaterial_js.MeshPhysicalMaterial {
         static version = version;
@@ -64,7 +64,7 @@
             }
             this.uniforms.projectedTexture.value = texture;
             this.uniforms.isTextureLoaded.value = Boolean(texture.image);
-            if (!this.uniforms.isTextureLoaded) {
+            if (!this.uniforms.isTextureLoaded.value) {
                 addLoadListener(texture, () => {
                     this.uniforms.isTextureLoaded.value = true;
                     this.#saveDimensions();
