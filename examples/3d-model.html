@@ -70,8 +70,11 @@
 				const gltf = await loadGltf('./models/suzanne.gltf')
 				const geometry = extractGeometry(gltf.scene)
 
-				// load the example texture
-				const texture = new TextureLoader().load('./images/uv.jpg')
+				// load the example textures
+				const textures = [
+					new TextureLoader().load('./images/uv.jpg'),
+					new TextureLoader().load('./images/charles-unsplash.jpg'),
+				]
 
 				const projectionCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 3)
 				projectionCam.position.z = 1.5
@@ -87,10 +90,12 @@
 					}
 				})
 
+				let index = 0
+
 				// create the mesh with the projected material
 				const material = new ProjectedMaterial({
 					camera: projectionCam,
-					texture,
+					texture: textures[index],
 					color: '#ccc',
 					textureScale: 1,
 				})
@@ -103,6 +108,10 @@
 				const directionalLight = new DirectionalLight(0xffffff, 0.6)
 				directionalLight.position.set(10, 10, 10)
 				lightContainer.add(directionalLight)
+
+				setInterval(() => {
+					material.texture = textures[++index % 2]
+				}, 2000)
 
 				webgl.onUpdate(dt => {
 					// move the mesh any way you want!
