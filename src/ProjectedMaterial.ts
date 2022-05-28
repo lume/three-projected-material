@@ -320,7 +320,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.uniforms.heightScaled.value = size.y
 	}
 
-	saveCameraMatrices() {
+	#saveCameraMatrices() {
 		// make sure the camera matrices are updated
 		this.camera.updateProjectionMatrix()
 		this.camera.updateMatrixWorld()
@@ -379,7 +379,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		}
 
 		// persist also the current camera position and matrices
-		this.saveCameraMatrices()
+		this.#saveCameraMatrices(updateWorldMatrices)
 	}
 
 	projectInstanceAt(
@@ -463,7 +463,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		// only if it's the first instance since most surely
 		// in all other instances the camera won't change
 		if (index === 0 || forceCameraSave) {
-			this.saveCameraMatrices()
+			this.#saveCameraMatrices()
 		}
 	}
 
