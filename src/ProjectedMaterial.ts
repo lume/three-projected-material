@@ -35,6 +35,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	#fitment: Fitment = 'contain'
 	#textureScale = 1
 
+	/**
+	 * The camera to be used for texture projection. Any time you change this,
+	 * also set `needsUpdate` to `true`.
+	 * TODO set needsUpdate automatically.
+	 */
 	get camera() {
 		return this.#camera
 	}
@@ -46,6 +51,19 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.#camera = camera
 
 		this.#saveDimensions()
+		this.needsUpdate = true
+
+		// toggle between two onBeforeCompile functions in order to force
+		// WebGLRenderer to make a new program when toggled, or else the
+		// renderer will not call onBeforeCompile again if we change the
+		// `camera` (the renderer detects the material have changed if it
+		// detects a different onBeforeCompile function), which means the
+		// material.defines.ORTHOGRAPHIC value will not change when we've
+		// changed the `camera` without this trick.
+		// Issue: https://discourse.threejs.org/t/38614
+		this.onBeforeCompile = isPerspectiveCamera(this.#camera)
+			? this.#onBeforeCompilePerspective
+			: this.#onBeforeCompileOrtho
 	}
 
 	get texture() {
@@ -124,7 +142,6 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 
 		Object.defineProperty(this, 'isProjectedMaterial', {value: this.isProjectedMaterial})
 
-		this.#camera = camera ?? this.#camera
 		this.#fitment = fitment ?? this.#fitment
 		this.#textureScale = textureScale ?? this.#textureScale
 
@@ -151,20 +168,41 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			frontFacesOnly: {value: frontFacesOnly},
 		}
 
+		if (camera) this.camera = camera
+
 		this.#saveDimensions()
 
-		this.onBeforeCompile = shader => {
-			// expose also the material's uniforms
-			Object.assign(this.uniforms, shader.uniforms)
-			shader.uniforms = this.uniforms
+		// If the image texture passed hasn't loaded yet,
+		// wait for it to load and compute the correct proportions.
+		// This avoids rendering black while the texture is loading
+		addLoadListener(texture, () => {
+			this.uniforms.isTextureLoaded.value = true
 
-			if (isOrthographicCamera(this.camera)) {
-				// @ts-expect-error material ✨
-				shader.defines.ORTHOGRAPHIC = ''
-			}
+			this.#saveDimensions()
+		})
+	}
 
-			shader.vertexShader = monkeyPatch(shader.vertexShader, {
-				header: /* glsl */ `
+	#onBeforeCompilePerspective: this['onBeforeCompile'] = (shader, ...args) => {
+		// @ts-expect-error material ✨
+		delete shader.defines.ORTHOGRAPHIC
+
+		this.#onBeforeCompileCommon(shader, ...args)
+	}
+
+	#onBeforeCompileOrtho: this['onBeforeCompile'] = (shader, ...args) => {
+		// @ts-expect-error material ✨
+		shader.defines.ORTHOGRAPHIC = ''
+
+		this.#onBeforeCompileCommon(shader, ...args)
+	}
+
+	#onBeforeCompileCommon: this['onBeforeCompile'] = shader => {
+		// expose also the material's uniforms
+		Object.assign(this.uniforms, shader.uniforms)
+		shader.uniforms = this.uniforms
+
+		shader.vertexShader = monkeyPatch(shader.vertexShader, {
+			header: /* glsl */ `
 					uniform mat4 viewMatrixCamera;
 					uniform mat4 projectionMatrixCamera;
 
@@ -183,7 +221,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					varying vec4 vWorldPosition;
 					#endif
 				`,
-				main: /* glsl */ `
+			main: /* glsl */ `
 					#ifdef USE_INSTANCING
 					mat4 savedModelMatrix = mat4(
 						savedModelMatrix0,
@@ -199,10 +237,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					vWorldPosition = savedModelMatrix * vec4(position, 1.0);
 					#endif
 				`,
-			})
+		})
 
-			shader.fragmentShader = monkeyPatch(shader.fragmentShader, {
-				header: /* glsl */ `
+		shader.fragmentShader = monkeyPatch(shader.fragmentShader, {
+			header: /* glsl */ `
 					uniform sampler2D projectedTexture;
 					uniform bool isTextureLoaded;
 					uniform bool isTextureProjected;
@@ -224,7 +262,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 						return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 					}
 				`,
-				'vec4 diffuseColor = vec4( diffuse, opacity );': /* glsl */ `
+			'vec4 diffuseColor = vec4( diffuse, opacity );': /* glsl */ `
 					// clamp the w to make sure we don't project behind
 					float w = max(vTexCoords.w, 0.0);
 
@@ -261,20 +299,14 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 						diffuseColor = textureColor * textureColor.a + diffuseColor * (1.0 - textureColor.a);
 					}
 				`,
-			})
-		}
-
-		// If the image texture passed hasn't loaded yet,
-		// wait for it to load and compute the correct proportions.
-		// This avoids rendering black while the texture is loading
-		addLoadListener(texture, () => {
-			this.uniforms.isTextureLoaded.value = true
-
-			this.#saveDimensions()
 		})
 	}
 
-	/** Call this any time the camera has been updated externally. */
+	/**
+	 * Call this any time the camera-specific parameters have been updated
+	 * externally. Non-camera-specific changes are otherwise covered by the project()
+	 * method.
+	 */
 	updateFromCamera() {
 		this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix)
 		this.#saveDimensions()
@@ -309,6 +341,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.uniforms.isTextureProjected.value = true
 	}
 
+	/**
+	 * Call this any time the projection camera or the object with the
+	 * ProjectedMaterial have been transformed.
+	 */
 	project(mesh: Mesh) {
 		if (!isProjectedMaterial(mesh.material)) {
 			throw new Error(`The mesh material must be a ProjectedMaterial`)
