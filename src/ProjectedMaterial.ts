@@ -324,7 +324,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		// make sure the camera matrices are updated
 		this.camera.updateProjectionMatrix()
 		this.camera.updateMatrixWorld()
-		this.camera.updateWorldMatrix(false, false) // TODO Might need to update parents if it is a child in the scene.
+		this.camera.updateWorldMatrix(true, false)
 
 		// update the uniforms from the camera so they're
 		// fixed in the camera's position at the projection time
