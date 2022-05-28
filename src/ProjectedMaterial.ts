@@ -277,7 +277,10 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					// this makes sure we don't sample out of the texture
 					bool isInTexture = (max(uv.x, uv.y) <= 1.0 && min(uv.x, uv.y) >= 0.0);
 
-					// this makes sure we don't render also the back of the object
+					// this makes sure we don't render also the back of the object if frontFacesOnly is true
+					// FIXME projection direction is wrong in some cases, namely
+					// when the camera and the target are both a child and not at the
+					// scene origin.
 					#ifdef ORTHOGRAPHIC
 					vec3 projectorDirection = projDirection;
 					#else
@@ -320,11 +323,13 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.uniforms.heightScaled.value = size.y
 	}
 
-	#saveCameraMatrices() {
+	#saveCameraMatrices(updateWorldMatrices = true) {
 		// make sure the camera matrices are updated
-		this.camera.updateProjectionMatrix()
-		this.camera.updateMatrixWorld()
-		this.camera.updateWorldMatrix(true, false)
+		this.camera.updateProjectionMatrix() // TODO move to updateFromCamera()
+		if (updateWorldMatrices) {
+			this.camera.updateMatrixWorld()
+			this.camera.updateWorldMatrix(true, false)
+		}
 
 		// update the uniforms from the camera so they're
 		// fixed in the camera's position at the projection time
@@ -332,8 +337,8 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		const projectionMatrixCamera = this.camera.projectionMatrix
 		const modelMatrixCamera = this.camera.matrixWorld
 
-		this.uniforms.viewMatrixCamera.value.copy(viewMatrixCamera)
-		this.uniforms.projectionMatrixCamera.value.copy(projectionMatrixCamera)
+		this.uniforms.viewMatrixCamera.value.copy(viewMatrixCamera) // TODO rename to cameraMatrixWorldInverse
+		this.uniforms.projectionMatrixCamera.value.copy(projectionMatrixCamera) // TODO move to updateFromCamera()
 		this.uniforms.projPosition.value.copy(this.camera.position)
 		this.uniforms.projDirection.value.set(0, 0, 1).applyMatrix4(modelMatrixCamera)
 
@@ -345,7 +350,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 	 * Call this any time the projection camera or the object with the
 	 * ProjectedMaterial have been transformed.
 	 */
-	project(mesh: Mesh) {
+	project(mesh: Mesh, updateWorldMatrices = true) {
 		if (!isProjectedMaterial(mesh.material)) {
 			throw new Error(`The mesh material must be a ProjectedMaterial`)
 		}
@@ -359,7 +364,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		}
 
 		// make sure the matrix is updated
-		mesh.updateWorldMatrix(true, false)
+		if (updateWorldMatrices) mesh.updateWorldMatrix(true, false)
 
 		// we save the object model matrix so it's projected relative
 		// to that position, like a snapshot

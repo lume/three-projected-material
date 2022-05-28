@@ -129,7 +129,7 @@ Create a new material to later use for a mesh.
 | `textureScale`   | 1                     | Make the texture bigger or smaller.                                                                                                                                                                                                                                                                                                                                                             |
 | `textureOffset`  | `new THREE.Vector2()` | Offset the texture in a x or y direction. The unit system goes from 0 to 1, from the bottom left corner to the top right corner of the projector camera frustum.                                                                                                                                                                                                                                |
 | `fitment`        | `'contain'`           | Possible values: `'cover'`, `'contain'`. Whether the texture should fit like CSS `object-fit: cover` or `object-fit: contain` within the projector camera frustum. By default it fits like `object-fit: contain`. See the descriptions of those [in the MDN docs](https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit#values).                                                          |
-| `frontFacesOnly` | `true`                | Possible values: `true`, `false`. If `true`, the texture is projected only onto faces that face towards the projector much like a real life projector, otherwise the projected texture will "pass through" the whole object and will also paint the faces facing away.                                                                                                                          |
+| `frontFacesOnly` | `true`                | A boolean. If `true`, the texture is projected only onto faces that face towards the projector much like a real life projector, otherwise the projected texture will "pass through" the whole object and will also paint the faces facing away.                                                                                                                                                 |
 | `...options`     |                       | Other options you pass to any three.js material like `color`, `opacity`, `envMap` and so on. The material is built from a [MeshPhysicalMaterial](https://threejs.org/docs/index.html#api/en/materials/MeshPhysicalMaterial), so you can pass any property of that material and of its parent [MeshStandardMaterial](https://threejs.org/docs/index.html#api/en/materials/MeshStandardMaterial). |
 
 These properties are exposed as properties of the material, so you can change
@@ -140,14 +140,15 @@ material.texture = newTexture
 material.textureScale = 0.8
 ```
 
-### `material.project(mesh)`
+### `material.project(mesh, updateWorldMatrices)`
 
 Project the texture from the camera on the mesh. With this method we "take a snaphot" of the current mesh and camera position in space. The
 After calling this method, you can move the mesh or the camera freely.
 
-| Option | Description                                          |
-| ------ | ---------------------------------------------------- |
-| `mesh` | The mesh that has a `ProjectedMaterial` as material. |
+| Option                | Description                                                                                                                                                                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mesh`                | The `THREE.Mesh` that has a `ProjectedMaterial` as material.                                                                                                                                                                                                     |
+| `updateWorldMatrices` | Optional, defaults to `true`. A `boolean` indicating whether or not to update world matrices of the projection camera and of the mesh that has the `ProjectedMaterial`. Setting it to `false` is useful if you will be updating world matrices externally first. |
 
 ### `material.updateFromCamera()`
 
