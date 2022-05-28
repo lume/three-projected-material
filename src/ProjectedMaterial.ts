@@ -24,6 +24,7 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
 	textureScale?: number
 	textureOffset?: Vector2
 	fitment?: Fitment
+	frontFacesOnly?: boolean
 }
 
 export class ProjectedMaterial extends MeshPhysicalMaterial {
@@ -92,6 +93,13 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		this.#saveDimensions()
 	}
 
+	get frontFacesOnly() {
+		return this.uniforms.frontFacesOnly.value
+	}
+	set frontFacesOnly(frontFacesOnly) {
+		this.uniforms.frontFacesOnly.value = frontFacesOnly
+	}
+
 	uniforms
 	readonly isProjectedMaterial = true
 
@@ -101,6 +109,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 		textureScale,
 		textureOffset = new Vector2(),
 		fitment,
+		frontFacesOnly = true,
 		...options
 	}: ProjectedMaterialParameters = {}) {
 		if (!texture.isTexture) {
@@ -139,6 +148,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 			widthScaled: {value: 1},
 			heightScaled: {value: 1},
 			textureOffset: {value: textureOffset},
+			frontFacesOnly: {value: frontFacesOnly},
 		}
 
 		this.#saveDimensions()
@@ -202,6 +212,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					uniform float widthScaled;
 					uniform float heightScaled;
 					uniform vec2 textureOffset;
+					uniform bool frontFacesOnly;
 
 					varying vec3 vSavedNormal;
 					varying vec4 vTexCoords;
@@ -235,7 +246,7 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 					vec3 projectorDirection = normalize(projPosition - vWorldPosition.xyz);
 					#endif
 					float dotProduct = dot(vSavedNormal, projectorDirection);
-					bool isFacingProjector = dotProduct > 0.0000001;
+					bool isFacingProjector = frontFacesOnly ? dotProduct > 0.0000001 : true;
 
 
 					vec4 diffuseColor = vec4(diffuse, opacity * backgroundOpacity);
