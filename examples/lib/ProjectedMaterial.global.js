@@ -37,7 +37,7 @@
         }, 16);
     }
 
-    const version = '0.2.1';
+    const version = '0.2.2';
 
     class ProjectedMaterial extends MeshPhysicalMaterial_js.MeshPhysicalMaterial {
         static version = version;
@@ -45,6 +45,11 @@
         #camera = new PerspectiveCamera_js.PerspectiveCamera();
         #fitment = 'contain';
         #textureScale = 1;
+        /**
+         * The camera to be used for texture projection. Any time you change this,
+         * also set `needsUpdate` to `true`.
+         * TODO set needsUpdate automatically.
+         */
         get camera() {
             return this.#camera;
         }
@@ -54,6 +59,18 @@
             }
             this.#camera = camera;
             this.#saveDimensions();
+            this.needsUpdate = true;
+            // toggle between two onBeforeCompile functions in order to force
+            // WebGLRenderer to make a new program when toggled, or else the
+            // renderer will not call onBeforeCompile again if we change the
+            // `camera` (the renderer detects the material have changed if it
+            // detects a different onBeforeCompile function), which means the
+            // material.defines.ORTHOGRAPHIC value will not change when we've
+            // changed the `camera` without this trick.
+            // Issue: https://discourse.threejs.org/t/38614
+            this.onBeforeCompile = isPerspectiveCamera(this.#camera)
+                ? this.#onBeforeCompilePerspective
+                : this.#onBeforeCompileOrtho;
         }
         get texture() {
             return this.uniforms.projectedTexture.value;
@@ -94,9 +111,15 @@
             this.#fitment = value;
             this.#saveDimensions();
         }
+        get frontFacesOnly() {
+            return this.uniforms.frontFacesOnly.value;
+        }
+        set frontFacesOnly(frontFacesOnly) {
+            this.uniforms.frontFacesOnly.value = frontFacesOnly;
+        }
         uniforms;
         isProjectedMaterial = true;
-        constructor({ camera, texture = new Texture_js.Texture(), textureScale, textureOffset = new Vector2_js.Vector2(), fitment, ...options } = {}) {
+        constructor({ camera, texture = new Texture_js.Texture(), textureScale, textureOffset = new Vector2_js.Vector2(), fitment, frontFacesOnly = true, ...options } = {}) {
             if (!texture.isTexture) {
                 throw new Error('Invalid texture passed to the ProjectedMaterial');
             }
@@ -105,7 +128,6 @@
             }
             super(options);
             Object.defineProperty(this, 'isProjectedMaterial', { value: this.isProjectedMaterial });
-            this.#camera = camera ?? this.#camera;
             this.#fitment = fitment ?? this.#fitment;
             this.#textureScale = textureScale ?? this.#textureScale;
             this.uniforms = {
@@ -128,18 +150,35 @@
                 widthScaled: { value: 1 },
                 heightScaled: { value: 1 },
                 textureOffset: { value: textureOffset },
+                frontFacesOnly: { value: frontFacesOnly },
             };
+            if (camera)
+                this.camera = camera;
             this.#saveDimensions();
-            this.onBeforeCompile = shader => {
-                // expose also the material's uniforms
-                Object.assign(this.uniforms, shader.uniforms);
-                shader.uniforms = this.uniforms;
-                if (isOrthographicCamera(this.camera)) {
-                    // @ts-expect-error material ✨
-                    shader.defines.ORTHOGRAPHIC = '';
-                }
-                shader.vertexShader = monkeyPatch(shader.vertexShader, {
-                    header: /* glsl */ `
+            // If the image texture passed hasn't loaded yet,
+            // wait for it to load and compute the correct proportions.
+            // This avoids rendering black while the texture is loading
+            addLoadListener(texture, () => {
+                this.uniforms.isTextureLoaded.value = true;
+                this.#saveDimensions();
+            });
+        }
+        #onBeforeCompilePerspective = (shader, ...args) => {
+            // @ts-expect-error material ✨
+            delete shader.defines.ORTHOGRAPHIC;
+            this.#onBeforeCompileCommon(shader, ...args);
+        };
+        #onBeforeCompileOrtho = (shader, ...args) => {
+            // @ts-expect-error material ✨
+            shader.defines.ORTHOGRAPHIC = '';
+            this.#onBeforeCompileCommon(shader, ...args);
+        };
+        #onBeforeCompileCommon = shader => {
+            // expose also the material's uniforms
+            Object.assign(this.uniforms, shader.uniforms);
+            shader.uniforms = this.uniforms;
+            shader.vertexShader = monkeyPatch(shader.vertexShader, {
+                header: /* glsl */ `
 					uniform mat4 viewMatrixCamera;
 					uniform mat4 projectionMatrixCamera;
 
@@ -158,7 +197,7 @@
 					varying vec4 vWorldPosition;
 					#endif
 				`,
-                    main: /* glsl */ `
+                main: /* glsl */ `
 					#ifdef USE_INSTANCING
 					mat4 savedModelMatrix = mat4(
 						savedModelMatrix0,
@@ -174,9 +213,9 @@
 					vWorldPosition = savedModelMatrix * vec4(position, 1.0);
 					#endif
 				`,
-                });
-                shader.fragmentShader = monkeyPatch(shader.fragmentShader, {
-                    header: /* glsl */ `
+            });
+            shader.fragmentShader = monkeyPatch(shader.fragmentShader, {
+                header: /* glsl */ `
 					uniform sampler2D projectedTexture;
 					uniform bool isTextureLoaded;
 					uniform bool isTextureProjected;
@@ -186,6 +225,7 @@
 					uniform float widthScaled;
 					uniform float heightScaled;
 					uniform vec2 textureOffset;
+					uniform bool frontFacesOnly;
 
 					varying vec3 vSavedNormal;
 					varying vec4 vTexCoords;
@@ -197,7 +237,7 @@
 						return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 					}
 				`,
-                    'vec4 diffuseColor = vec4( diffuse, opacity );': /* glsl */ `
+                'vec4 diffuseColor = vec4( diffuse, opacity );': /* glsl */ `
 					// clamp the w to make sure we don't project behind
 					float w = max(vTexCoords.w, 0.0);
 
@@ -212,14 +252,17 @@
 					// this makes sure we don't sample out of the texture
 					bool isInTexture = (max(uv.x, uv.y) <= 1.0 && min(uv.x, uv.y) >= 0.0);
 
-					// this makes sure we don't render also the back of the object
+					// this makes sure we don't render also the back of the object if frontFacesOnly is true
+					// FIXME projection direction is wrong in some cases, namely
+					// when the camera and the target are both a child and not at the
+					// scene origin.
 					#ifdef ORTHOGRAPHIC
 					vec3 projectorDirection = projDirection;
 					#else
 					vec3 projectorDirection = normalize(projPosition - vWorldPosition.xyz);
 					#endif
 					float dotProduct = dot(vSavedNormal, projectorDirection);
-					bool isFacingProjector = dotProduct > 0.0000001;
+					bool isFacingProjector = frontFacesOnly ? dotProduct > 0.0000001 : true;
 
 
 					vec4 diffuseColor = vec4(diffuse, opacity * backgroundOpacity);
@@ -234,17 +277,13 @@
 						diffuseColor = textureColor * textureColor.a + diffuseColor * (1.0 - textureColor.a);
 					}
 				`,
-                });
-            };
-            // If the image texture passed hasn't loaded yet,
-            // wait for it to load and compute the correct proportions.
-            // This avoids rendering black while the texture is loading
-            addLoadListener(texture, () => {
-                this.uniforms.isTextureLoaded.value = true;
-                this.#saveDimensions();
             });
-        }
-        /** Call this any time the camera has been updated externally. */
+        };
+        /**
+         * Call this any time the camera-specific parameters have been updated
+         * externally. Non-camera-specific changes are otherwise covered by the project()
+         * method.
+         */
         updateFromCamera() {
             this.uniforms.projectionMatrixCamera.value.copy(this.camera.projectionMatrix);
             this.#saveDimensions();
@@ -255,24 +294,30 @@
             this.uniforms.widthScaled.value = size.x;
             this.uniforms.heightScaled.value = size.y;
         }
-        saveCameraMatrices() {
+        #saveCameraMatrices(updateWorldMatrices = true) {
             // make sure the camera matrices are updated
-            this.camera.updateProjectionMatrix();
-            this.camera.updateMatrixWorld();
-            this.camera.updateWorldMatrix(false, false); // TODO Might need to update parents if it is a child in the scene.
+            this.camera.updateProjectionMatrix(); // TODO move to updateFromCamera()
+            if (updateWorldMatrices) {
+                this.camera.updateMatrixWorld();
+                this.camera.updateWorldMatrix(true, false);
+            }
             // update the uniforms from the camera so they're
             // fixed in the camera's position at the projection time
             const viewMatrixCamera = this.camera.matrixWorldInverse;
             const projectionMatrixCamera = this.camera.projectionMatrix;
             const modelMatrixCamera = this.camera.matrixWorld;
-            this.uniforms.viewMatrixCamera.value.copy(viewMatrixCamera);
-            this.uniforms.projectionMatrixCamera.value.copy(projectionMatrixCamera);
+            this.uniforms.viewMatrixCamera.value.copy(viewMatrixCamera); // TODO rename to cameraMatrixWorldInverse
+            this.uniforms.projectionMatrixCamera.value.copy(projectionMatrixCamera); // TODO move to updateFromCamera()
             this.uniforms.projPosition.value.copy(this.camera.position);
             this.uniforms.projDirection.value.set(0, 0, 1).applyMatrix4(modelMatrixCamera);
             // tell the shader we've projected
             this.uniforms.isTextureProjected.value = true;
         }
-        project(mesh) {
+        /**
+         * Call this any time the projection camera or the object with the
+         * ProjectedMaterial have been transformed.
+         */
+        project(mesh, updateWorldMatrices = true) {
             if (!isProjectedMaterial(mesh.material)) {
                 throw new Error(`The mesh material must be a ProjectedMaterial`);
             }
@@ -280,7 +325,8 @@
                 throw new Error(`The provided mesh doesn't have the same material as where project() has been called from`);
             }
             // make sure the matrix is updated
-            mesh.updateWorldMatrix(true, false);
+            if (updateWorldMatrices)
+                mesh.updateWorldMatrix(true, false);
             // we save the object model matrix so it's projected relative
             // to that position, like a snapshot
             this.uniforms.savedModelMatrix.value.copy(mesh.matrixWorld);
@@ -295,7 +341,7 @@
                 }
             }
             // persist also the current camera position and matrices
-            this.saveCameraMatrices();
+            this.#saveCameraMatrices(updateWorldMatrices);
         }
         projectInstanceAt(index, instancedMesh, matrixWorld, { forceCameraSave = false } = {}) {
             if (!instancedMesh.isInstancedMesh) {
@@ -333,7 +379,7 @@
             // only if it's the first instance since most surely
             // in all other instances the camera won't change
             if (index === 0 || forceCameraSave) {
-                this.saveCameraMatrices();
+                this.#saveCameraMatrices();
             }
         }
         copy(source) {

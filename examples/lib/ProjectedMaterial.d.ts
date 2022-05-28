@@ -11,10 +11,16 @@ interface ProjectedMaterialParameters extends MeshPhysicalMaterialParameters {
     textureScale?: number;
     textureOffset?: Vector2;
     fitment?: Fitment;
+    frontFacesOnly?: boolean;
 }
 export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     #private;
     static version: string;
+    /**
+     * The camera to be used for texture projection. Any time you change this,
+     * also set `needsUpdate` to `true`.
+     * TODO set needsUpdate automatically.
+     */
     get camera(): PerspectiveCamera | OrthographicCamera;
     set camera(camera: PerspectiveCamera | OrthographicCamera);
     get texture(): Texture;
@@ -25,6 +31,8 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
     set textureOffset(textureOffset: Vector2);
     get fitment(): Fitment;
     set fitment(value: Fitment);
+    get frontFacesOnly(): boolean;
+    set frontFacesOnly(frontFacesOnly: boolean);
     uniforms: {
         projectedTexture: {
             value: Texture;
@@ -62,13 +70,23 @@ export declare class ProjectedMaterial extends MeshPhysicalMaterial {
         textureOffset: {
             value: Vector2;
         };
+        frontFacesOnly: {
+            value: boolean;
+        };
     };
     readonly isProjectedMaterial = true;
-    constructor({ camera, texture, textureScale, textureOffset, fitment, ...options }?: ProjectedMaterialParameters);
-    /** Call this any time the camera has been updated externally. */
+    constructor({ camera, texture, textureScale, textureOffset, fitment, frontFacesOnly, ...options }?: ProjectedMaterialParameters);
+    /**
+     * Call this any time the camera-specific parameters have been updated
+     * externally. Non-camera-specific changes are otherwise covered by the project()
+     * method.
+     */
     updateFromCamera(): void;
-    saveCameraMatrices(): void;
-    project(mesh: Mesh): void;
+    /**
+     * Call this any time the projection camera or the object with the
+     * ProjectedMaterial have been transformed.
+     */
+    project(mesh: Mesh, updateWorldMatrices?: boolean): void;
     projectInstanceAt(index: number, instancedMesh: InstancedMesh, matrixWorld: Matrix4, { forceCameraSave }?: {
         forceCameraSave?: boolean | undefined;
     }): void;
