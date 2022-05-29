@@ -21,16 +21,18 @@
 	],
 	"scripts": {
 		"start": "serve examples/",
-		"build": "tsc && rollup -c",
+		"build": "npm run clean && tsc && rollup -c",
+		"postbuild": "mkdir -p examples/lib/three-projected-material && cp dist/*.js dist/*.d.ts examples/lib/three-projected-material",
+		"clean": "rm -rf dist examples/lib/three-projected-material",
 		"deploy": "gh-pages -d examples",
-		"postbuild": "cp dist/*.js dist/*.d.ts examples/lib/",
 		"release:patch": "npm version patch -m 'v%s' && npm publish",
 		"release:minor": "npm version minor -m 'v%s' && npm publish",
 		"release:major": "npm version major -m 'v%s' && npm publish",
 		"preversion": "npm run build",
 		"version": "npm run updateversion && npm run build && git add .",
 		"postversion": "git push --follow-tags",
-		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts"
+		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts",
+		"prepare": "npm run build"
 	},
 	"peerDependencies": {
 		"three": ">=0.124.0"
