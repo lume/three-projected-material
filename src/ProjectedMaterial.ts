@@ -1,3 +1,9 @@
+// TODO
+// - FIXME When <lume-texture-projector> src is `""`, then
+// three-projected-material leaks infinite setInterval loops waiting for
+// previous textures to load that never load. Test this by pausing picture frame
+// demo with empty src. Needs cleanup on texture change.
+
 import {MeshPhysicalMaterial} from 'three/src/materials/MeshPhysicalMaterial.js'
 import {PerspectiveCamera} from 'three/src/cameras/PerspectiveCamera.js'
 import {Texture} from 'three/src/textures/Texture.js'
