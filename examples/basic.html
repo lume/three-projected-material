@@ -49,6 +49,10 @@
 			// 	AmbientLight,
 			// } from 'three'
 
+			// However on slower networks, making more requests may take more
+			// time. We need to try making an HTTP/3 multiplexing module server
+			// (Node.js and Deno both don't have HTTP/3 yet at time of writing this).
+
 			import WebGLApp from './lib/WebGLApp.js'
 			import {ProjectedMaterial} from './lib/three-projected-material/ProjectedMaterial.js'
 

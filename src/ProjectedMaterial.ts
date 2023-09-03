@@ -489,9 +489,11 @@ export class ProjectedMaterial extends MeshPhysicalMaterial {
 function getCameraRatio(camera: PerspectiveCamera | OrthographicCamera) {
 	switch (camera.type) {
 		case 'PerspectiveCamera': {
+			camera = camera as PerspectiveCamera // Cast because Three.js .type property regressed to plain `string` type
 			return camera.aspect
 		}
 		case 'OrthographicCamera': {
+			camera = camera as OrthographicCamera // Cast because Three.js .type property regressed to plain `string` type
 			const width = Math.abs(camera.right - camera.left)
 			const height = Math.abs(camera.top - camera.bottom)
 			return width / height
