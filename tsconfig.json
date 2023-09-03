@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"strict": true,
 		"noUnusedLocals": true,
-		"verbatimModuleSyntax": true,
+		"importsNotUsedAsValues": "error",
 
 		"target": "ES2022",
 		"module": "ESNext",
