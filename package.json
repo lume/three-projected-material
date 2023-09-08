@@ -32,8 +32,7 @@
 		"preversion": "npm run build",
 		"version": "npm run updateversion && npm run build && git add .",
 		"postversion": "git push --follow-tags",
-		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts",
-		"prepare": "npm run build"
+		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts"
 	},
 	"peerDependencies": {
 		"three": ">=0.124.0"
