@@ -1,5 +1,5 @@
 .vscode
 node_modules/
 dist/
-exampes/lib/
-exampes/models/
+examples/lib/
+examples/models/
