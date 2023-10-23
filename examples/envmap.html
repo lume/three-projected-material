@@ -17,21 +17,12 @@
 			<img src="images/source.svg" />
 		</a>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
 			import {EquirectangularReflectionMapping} from 'three/src/constants.js'
-			import {sRGBEncoding} from 'three/src/constants.js'
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {IcosahedronGeometry} from 'three/src/geometries/IcosahedronGeometry.js'
 			import {Color} from 'three/src/math/Color.js'
 			import {Mesh} from 'three/src/objects/Mesh.js'
@@ -50,8 +41,6 @@
 				showFps: true,
 				// enable orbit-controls
 				orbitControls: true,
-				// enable gamma
-				gamma: true,
 			})
 
 			// attach it to the window to inspect in the console
@@ -59,12 +48,12 @@
 
 			// load the example texture
 			const texture = new TextureLoader().load('./images/charles-unsplash.jpg')
-			texture.encoding = sRGBEncoding
+			texture.colorSpace = SRGBColorSpace
 
 			// load the envMap
 			const envMap = new TextureLoader().load('./images/kandao3_blurred.jpg')
 			envMap.mapping = EquirectangularReflectionMapping
-			envMap.encoding = sRGBEncoding
+			envMap.colorSpace = SRGBColorSpace
 
 			const geometry = new IcosahedronGeometry(1, 6)
 			const material = new ProjectedMaterial({
@@ -72,8 +61,7 @@
 				texture,
 				envMap,
 				textureScale: 2,
-				// convert the color since gamma is enabled
-				color: new Color('#cccccc').convertSRGBToLinear(),
+				color: new Color('#cccccc'),
 				// make it reflective
 				roughness: 0,
 			})
@@ -90,7 +78,7 @@
 			// webgl.scene.environment = envMap
 
 			// add lights
-			const ambientLight = new AmbientLight(0xffffff, 0.5)
+			const ambientLight = new AmbientLight(0xffffff, 0.5 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

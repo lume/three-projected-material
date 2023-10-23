@@ -17,19 +17,11 @@
 			<img src="images/source.svg" />
 		</a>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
 			// This...
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {Vector3} from 'three/src/math/Vector3.js'
 			import {PerspectiveCamera} from 'three/src/cameras/PerspectiveCamera.js'
 			import {CameraHelper} from 'three/src/helpers/CameraHelper.js'
@@ -87,6 +79,7 @@
 
 			// load the example texture
 			const texture = new TextureLoader().load('./images/uv.jpg')
+			texture.colorSpace = SRGBColorSpace
 
 			// create the mesh with the projected material
 			const geometry = new BoxGeometry(1, 1, 1)
@@ -107,7 +100,7 @@
 			})
 
 			// add lights
-			const ambientLight = new AmbientLight(0xffffff, 0.8)
+			const ambientLight = new AmbientLight(0xffffff, 1 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

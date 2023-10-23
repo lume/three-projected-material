@@ -17,18 +17,10 @@
 			<img src="images/source.svg" />
 		</a>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {Object3D} from 'three/src/core/Object3D.js'
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
 			import {TetrahedronGeometry} from 'three/src/geometries/TetrahedronGeometry.js'
@@ -75,6 +67,7 @@
 
 			// load the example texture
 			const texture = new TextureLoader().load('./images/charles-unsplash.jpg')
+			texture.colorSpace = SRGBColorSpace
 
 			const geometry = new TetrahedronGeometry()
 			const material = new ProjectedMaterial({
@@ -136,11 +129,11 @@
 			})
 
 			// add lights
-			const directionalLight = new DirectionalLight(0xffffff, 0.6)
+			const directionalLight = new DirectionalLight(0xffffff, 0.6 * Math.PI)
 			directionalLight.position.set(0, 10, 10)
 			webgl.scene.add(directionalLight)
 
-			const ambientLight = new AmbientLight(0xffffff, 0.6)
+			const ambientLight = new AmbientLight(0xffffff, 0.6 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

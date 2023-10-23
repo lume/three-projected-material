@@ -6,6 +6,7 @@
 
 		"target": "ES2022",
 		"module": "ESNext",
+		"newLine": "lf",
 
 		"outDir": "./dist",
 		"declaration": true,

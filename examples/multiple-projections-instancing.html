@@ -20,18 +20,10 @@
 			Inspired by <a href="https://www.instagram.com/dirkkoy/" target="_blank">@dirkkoy</a>
 		</p>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {Object3D} from 'three/src/core/Object3D.js'
 			import {Matrix4} from 'three/src/math/Matrix4.js'
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
@@ -79,6 +71,7 @@
 
 			// load the texture/textures
 			const texture = new TextureLoader().load('./images/lukasz-szmigiel-unsplash.jpg')
+			texture.colorSpace = SRGBColorSpace
 
 			// create a starting geometry
 			const geometry = new BoxGeometry(0.3, 0.3, 0.3)
@@ -167,7 +160,7 @@
 
 			// reset the camera position
 			webgl.camera.position.copy(initialCameraPosition)
-			webgl.camera.up.copy(Object3D.DefaultUp)
+			webgl.camera.up.copy(Object3D.DEFAULT_UP)
 			webgl.camera.lookAt(0, 0, 0)
 
 			// move the mesh any way you want! in this case
@@ -211,7 +204,7 @@
 			})
 
 			// add lights
-			const ambientLight = new AmbientLight(0xffffff, 1)
+			const ambientLight = new AmbientLight(0xffffff, 1 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

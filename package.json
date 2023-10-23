@@ -3,6 +3,7 @@
 	"description": "A Three.js material that projects a texture onto an object",
 	"version": "0.2.5",
 	"type": "module",
+	"main": "dist/ProjectedMaterial.js",
 	"homepage": "https://github.com/lume/three-projected-material",
 	"repository": "git@github.com:lume/three-projected-material.git",
 	"contributors": [
@@ -20,8 +21,8 @@
 		"dist/"
 	],
 	"scripts": {
-		"start": "serve examples/",
-		"build": "npm run clean && tsc && rollup -c",
+		"start": "five-server . --open=./examples/",
+		"build": "npm run clean && tsc",
 		"postbuild": "mkdirp examples/lib && cpr dist examples/lib/three-projected-material",
 		"clean": "rimraf dist examples/lib/three-projected-material",
 		"test": "npm run prettier:check && npm run build && echo TODO three-projected-material tests",
@@ -40,14 +41,13 @@
 		"three": ">=0.124.0"
 	},
 	"devDependencies": {
-		"@rollup/plugin-typescript": "11.1.3",
 		"@types/three": ">=0.124.0",
 		"cpr": "^3.0.1",
+		"five-server": "^0.3.1",
 		"gh-pages": "^3.1.0",
 		"mkdirp": "^3.0.1",
 		"prettier": "3.0.3",
 		"rimraf": "^5.0.1",
-		"rollup": "3.28.1",
 		"serve": "^13.0.2",
 		"stats.js": "^0.17.0",
 		"three": ">=0.124.0",

@@ -17,18 +17,10 @@
 			<img src="images/source.svg" />
 		</a>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
 			import {IcosahedronGeometry} from 'three/src/geometries/IcosahedronGeometry.js'
 			import {Mesh} from 'three/src/objects/Mesh.js'
@@ -58,6 +50,7 @@
 
 			// load the texture with transparency
 			const texture = new TextureLoader().load('./images/three-projected-material-4.png')
+			texture.colorSpace = SRGBColorSpace
 
 			const geometry = new IcosahedronGeometry(1.3, 5)
 			const material = new ProjectedMaterial({
@@ -83,15 +76,15 @@
 			})
 
 			// add lights
-			const directionalLight = new DirectionalLight(0xffffff, 0.5)
+			const directionalLight = new DirectionalLight(0xffffff, 0.5 * Math.PI)
 			directionalLight.position.set(0, 10, 10)
 			webgl.scene.add(directionalLight)
 
-			const directionalLight2 = new DirectionalLight(0xffffff, 0.2)
+			const directionalLight2 = new DirectionalLight(0xffffff, 0.2 * Math.PI)
 			directionalLight2.position.set(10, 0, -5)
 			webgl.scene.add(directionalLight2)
 
-			const ambientLight = new AmbientLight(0xffffff, 0.6)
+			const ambientLight = new AmbientLight(0xffffff, 0.6 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

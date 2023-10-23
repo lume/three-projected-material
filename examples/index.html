@@ -132,18 +132,10 @@
 			}
 		</style>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {TextureLoader} from 'three/src/loaders/TextureLoader.js'
 			import {Mesh} from 'three/src/objects/Mesh.js'
 			import {RoundedBoxGeometry} from './lib/RoundedBoxGeometry.js'
@@ -239,6 +231,7 @@
 			// https://threejs.org/examples/#webgl_materials_texture_anisotropy
 			textures.forEach(texture => {
 				texture.anisotropy = webgl.renderer.capabilities.getMaxAnisotropy()
+				texture.colorSpace = SRGBColorSpace
 			})
 
 			// make an array of materials with the same texture
@@ -250,8 +243,8 @@
 					color: 'ghostwhite',
 					textureScale: 0.65,
 					transparent: true, // needed for multiple materials
-					roughness: 0.1,
-					clearcoat: 1,
+					roughness: 0.4,
+					clearcoat: 0,
 				})
 
 				materials.push(material)
@@ -305,12 +298,12 @@
 			})
 
 			// add lights
-			const spotLight = new SpotLight(0xffffff, 4, 40, Math.PI / 4, 1)
-			spotLight.position.set(20, 20, 15)
+			const spotLight = new SpotLight('white', 800)
+			spotLight.position.set(6, 6, 20)
 			spotLight.lookAt(0, 0, 0)
 			webgl.scene.add(spotLight)
 
-			const spotLight2 = new SpotLight(0xffffff, 4, 40, Math.PI / 4, 1)
+			const spotLight2 = new SpotLight('white', 400)
 			spotLight2.position.set(-10, -3, -3)
 			spotLight2.lookAt(0, 0, 0)
 			webgl.scene.add(spotLight2)
@@ -320,7 +313,7 @@
 			// spotLight3.lookAt(0, 0, size / 2)
 			// webgl.scene.add(spotLight3)
 
-			const ambientLight = new AmbientLight(0xffffff, 0.4)
+			const ambientLight = new AmbientLight(0xffffff, 0.2 * Math.PI)
 			webgl.scene.add(ambientLight)
 
 			// start animation loop

@@ -17,23 +17,14 @@
 			<img src="images/source.svg" />
 		</a>
 
-		<script async src="//ga.jspm.io/npm:es-module-shims@1.5.4/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@^0.139.0/src/Three.js",
-					"three/": "https://unpkg.com/three@^0.139.0/"
-				}
-			}
-		</script>
+		<script src="./importmap.js"></script>
 
 		<script type="module">
 			import {Vector3} from 'three/src/math/Vector3.js'
 			import {PerspectiveCamera} from 'three/src/cameras/PerspectiveCamera.js'
 			import {CameraHelper} from 'three/src/helpers/CameraHelper.js'
 			import {VideoTexture} from 'three/src/textures/VideoTexture.js'
-			import {sRGBEncoding} from 'three/src/constants.js'
+			import {SRGBColorSpace} from 'three/src/constants.js'
 			import {AmbientLight} from 'three/src/lights/AmbientLight.js'
 			import {DirectionalLight} from 'three/src/lights/DirectionalLight.js'
 			import WebGLApp from './lib/WebGLApp.js'
@@ -62,8 +53,6 @@
 				controls: {
 					showProjector: false,
 				},
-				// enable gamma
-				gamma: true,
 			})
 
 			// attach it to the window to inspect in the console
@@ -79,9 +68,8 @@
 				video.loop = true
 				video.play()
 
-				// create the VideoTexture and enable gamma correction for it
 				const texture = new VideoTexture(video)
-				texture.encoding = sRGBEncoding
+				texture.colorSpace = SRGBColorSpace // TODO video still seems a little washed out
 
 				// load the cinema model
 				const gltf = await loadGltf('./models/cinema_screen.glb')
@@ -123,11 +111,11 @@
 				material.project(screen)
 
 				// add lights
-				const directionalLight = new DirectionalLight(0xffffff, 0.6)
+				const directionalLight = new DirectionalLight(0xffffff, 0.6 * Math.PI)
 				directionalLight.position.set(0, 10, 10)
 				webgl.scene.add(directionalLight)
 
-				const ambientLight = new AmbientLight(0xffffff, 0.3)
+				const ambientLight = new AmbientLight(0xffffff, 0.3 * Math.PI)
 				webgl.scene.add(ambientLight)
 
 				// start animation loop

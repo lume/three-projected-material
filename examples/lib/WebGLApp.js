@@ -2,11 +2,9 @@
 import {Color} from 'three/src/math/Color.js'
 import {Vector3} from 'three/src/math/Vector3.js'
 import {WebGLRenderer} from 'three/src/renderers/WebGLRenderer.js'
-import {sRGBEncoding} from 'three/src/constants.js'
 import {PerspectiveCamera} from 'three/src/cameras/PerspectiveCamera.js'
 import {OrthographicCamera} from 'three/src/cameras/OrthographicCamera.js'
 import {Scene} from 'three/src/scenes/Scene.js'
-import {HalfFloatType} from 'three/src/constants.js'
 import {OrbitControls} from './OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 // import CCapture from 'https://unpkg.com/ccapture.js@1.1.0/build/CCapture.all.min.js'
@@ -57,8 +55,6 @@ export default class WebGLApp {
 		frustumSize = 3,
 		near = 0.01,
 		far = 100,
-		gamma = false,
-		physicallyCorrectLights = false,
 		...options
 	} = {}) {
 		this.renderer = new WebGLRenderer({
@@ -71,14 +67,6 @@ export default class WebGLApp {
 		})
 		if (options.sortObjects !== undefined) {
 			this.renderer.sortObjects = options.sortObjects
-		}
-		if (gamma) {
-			// enable gamma correction, read more about it here:
-			// https://www.donmccurdy.com/2020/06/17/color-management-in-threejs/
-			this.renderer.outputEncoding = sRGBEncoding
-		}
-		if (physicallyCorrectLights) {
-			this.renderer.physicallyCorrectLights = true
 		}
 		if (options.xr) {
 			this.renderer.xr.enabled = true
@@ -192,7 +180,7 @@ export default class WebGLApp {
 			const maxMultisampling = this.gl.getParameter(this.gl.MAX_SAMPLES)
 			this.composer = new EffectComposer(this.renderer, {
 				multisampling: Math.min(8, maxMultisampling),
-				frameBufferType: gamma ? HalfFloatType : undefined,
+				// frameBufferType: gamma ? HalfFloatType : undefined,
 				...options,
 			})
 			this.composer.addPass(new RenderPass(this.scene, this.camera))
