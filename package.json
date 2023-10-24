@@ -29,12 +29,11 @@
 		"prettier": "prettier . --write",
 		"prettier:check": "prettier . --check",
 		"deploy": "gh-pages -d examples",
-		"release:patch": "npm version patch -m 'v%s' && npm publish",
-		"release:minor": "npm version minor -m 'v%s' && npm publish",
-		"release:major": "npm version major -m 'v%s' && npm publish",
+		"release:patch": "npm version --no-workspaces patch -m 'v%s' && npm publish && git push --follow-tags",
+		"release:minor": "npm version --no-workspaces minor -m 'v%s' && npm publish && git push --follow-tags",
+		"release:major": "npm version --no-workspaces major -m 'v%s' && npm publish && git push --follow-tags",
 		"preversion": "npm run build",
 		"version": "npm run updateversion && npm run build && git add .",
-		"postversion": "git push --follow-tags",
 		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts"
 	},
 	"peerDependencies": {
