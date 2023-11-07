@@ -6,3 +6,4 @@ export declare function monkeyPatch(shader: string, { defines, header, main, ...
     main?: string | undefined;
 }): string;
 export declare function addLoadListener(texture: Texture, callback: (t: Texture) => void): void;
+//# sourceMappingURL=three-utils.d.ts.map

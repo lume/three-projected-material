@@ -102,3 +102,4 @@ export interface Vec2 {
     y: number;
 }
 export {};
+//# sourceMappingURL=ProjectedMaterial.d.ts.map

@@ -2,14 +2,15 @@
 	"compilerOptions": {
 		"strict": true,
 		"noUnusedLocals": true,
-		"importsNotUsedAsValues": "error",
+		"verbatimModuleSyntax": true,
 
-		"target": "ES2022",
-		"module": "ESNext",
+		"target": "esnext",
+		"module": "esnext",
 		"newLine": "lf",
 
 		"outDir": "./dist",
 		"declaration": true,
+		"declarationMap": true,
 		"moduleResolution": "Node"
 	},
 	"include": ["./src/**/*"]
