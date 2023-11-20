@@ -23,7 +23,7 @@
 	"scripts": {
 		"start": "five-server . --open=./examples/",
 		"build": "tsc",
-		"postbuild": "mkdirp examples/lib && cpr dist examples/lib/three-projected-material",
+		"postbuild": "mkdirp examples/lib && cpr dist examples/lib/three-projected-material --overwrite",
 		"clean": "rimraf dist examples/lib/three-projected-material",
 		"test": "npm run prettier:check && npm run build && echo TODO three-projected-material tests",
 		"prettier": "prettier . --write",
