@@ -59,6 +59,7 @@
 				video.src = './images/bigbucksbunny.mp4'
 				video.muted = true
 				video.loop = true
+				video.setAttribute('crossorigin', 'anonymous')
 				video.play()
 
 				const texture = new VideoTexture(video)
