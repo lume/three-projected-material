@@ -6,16 +6,6 @@
 	"main": "dist/ProjectedMaterial.js",
 	"homepage": "https://github.com/lume/three-projected-material",
 	"repository": "git@github.com:lume/three-projected-material.git",
-	"contributors": [
-		{
-			"name": "Marco Fugaro",
-			"email": "marco.fugaro@gmail.com"
-		},
-		{
-			"name": "Joe Pea",
-			"email": "trusktr@gmail.com"
-		}
-	],
 	"license": "MIT",
 	"files": [
 		"dist/"
@@ -37,10 +27,10 @@
 		"updateversion": "echo export const version = \"'$npm_package_version'\" > src/version.ts"
 	},
 	"peerDependencies": {
-		"three": ">=0.124.0"
+		"three": ">=0.152.0"
 	},
 	"devDependencies": {
-		"@types/three": ">=0.124.0",
+		"@types/three": ">=0.152.0",
 		"cpr": "^3.0.1",
 		"five-server": "^0.3.1",
 		"gh-pages": "^3.1.0",
@@ -49,7 +39,7 @@
 		"rimraf": "^5.0.1",
 		"serve": "^13.0.2",
 		"stats.js": "^0.17.0",
-		"three": ">=0.124.0",
+		"three": ">=0.152.0",
 		"typescript": "^5.0.0"
 	}
 }

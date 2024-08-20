@@ -8,22 +8,16 @@
 	</head>
 	<body>
 		<canvas id="app"></canvas>
-		<a
-			class="source-fab"
-			target="_blank"
-			href="https://github.com/lume/three-projected-material/blob/master/examples/multiple-projections.html"
-			title="View source code on GitHub"
-		>
-			<img src="images/source.svg" />
-		</a>
+
+		<script src="./importmap.js"></script>
+		<script src="./srclink.js"></script>
+
 		<p class="title">
 			Inspired by <a href="https://twitter.com/yiwen_lin" target="_blank">@yiwen_lin</a>
 			<br />
 			<br />
 			Click to paint, drag to explore.
 		</p>
-
-		<script src="./importmap.js"></script>
 
 		<script type="module">
 			import {SRGBColorSpace} from 'three/src/constants.js'
@@ -32,7 +26,7 @@
 			import {Vector2} from 'three/src/math/Vector2.js'
 			import {AmbientLight} from 'three/src/lights/AmbientLight.js'
 			import WebGLApp from './lib/WebGLApp.js'
-			import {ProjectedMaterial} from './lib/three-projected-material/ProjectedMaterial.js'
+			import {ProjectedMaterial} from 'three-projected-material/dist/ProjectedMaterial.js'
 			import {loadGltf, extractGeometry} from './lib/utils.js'
 
 			// grab our canvas

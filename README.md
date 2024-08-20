@@ -3,7 +3,7 @@
 > Three.js Material which lets you do [Texture Projection](https://en.wikipedia.org/wiki/Projective_texture_mapping) on a 3d Model.
 
 <p align="center">
-  <a href="https://marcofugaro.github.io/three-projected-material/"><img src="screenshot.png" width="700"></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/index.html"><img src="screenshot.png" width="700"></a>
 </p>
 
 ## Recommended Installation
@@ -102,18 +102,18 @@ material.project(box)
 
 `ProjectedMaterial` also supports **instanced meshes** via three.js' [InstancedMesh](https://threejs.org/docs/index.html#api/en/objects/InstancedMesh), and even **multiple projections**. Check out the examples below for a detailed guide!
 
-## [Examples](https://marcofugaro.github.io/three-projected-material/)
+## [Examples](https://rawcdn.githack.com/lume/three-projected-material/main/examples/index.html)
 
 <p align="center">
-  <a href="https://marcofugaro.github.io/three-projected-material/basic"><img width="274" src="examples/screenshots/basic.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/same-camera"><img width="274" src="examples/screenshots/same-camera.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/3d-model"><img width="274" src="examples/screenshots/3d-model.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/orthographic-camera"><img width="274" src="examples/screenshots/orthographic-camera.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/transparency"><img width="274" src="examples/screenshots/transparency.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/envmap"><img width="274" src="examples/screenshots/envmap.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/multiple-projections"><img width="274" src="examples/screenshots/multiple-projections.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/instancing"><img width="274" src="examples/screenshots/instancing.png" /></a>
-  <a href="https://marcofugaro.github.io/three-projected-material/multiple-projections-instancing"><img width="274" src="examples/screenshots/multiple-projections-instancing.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/basic.html"><img width="274" src="examples/screenshots/basic.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/same-camera.html"><img width="274" src="examples/screenshots/same-camera.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/3d-model.html"><img width="274" src="examples/screenshots/3d-model.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/orthographic-camera.html"><img width="274" src="examples/screenshots/orthographic-camera.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/transparency.html"><img width="274" src="examples/screenshots/transparency.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/envmap.html"><img width="274" src="examples/screenshots/envmap.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/multiple-projections.html"><img width="274" src="examples/screenshots/multiple-projections.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/instancing.html"><img width="274" src="examples/screenshots/instancing.png" /></a>
+  <a href="https://rawcdn.githack.com/lume/three-projected-material/main/examples/multiple-projections-instancing.html"><img width="274" src="examples/screenshots/multiple-projections-instancing.png" /></a>
 </p>
 
 ## API Reference
@@ -186,7 +186,7 @@ dummy.updateMatrix()
 material.projectInstanceAt(i, instancedMesh, dummy.matrix)
 ```
 
-[Link to the full example about instancing](https://marcofugaro.github.io/three-projected-material/instancing).
+[Link to the full example about instancing](https://rawcdn.githack.com/lume/three-projected-material/main/examples/instancing.html).
 
 | Option          | Description                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
